@@ -251,6 +251,7 @@ body, html {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    z-index: 2;
 }
 
 #final-wreath {
@@ -295,7 +296,7 @@ body, html {
 .button {
     font-size: 34px;
     padding: 10px 20px;
-    margin: 10px 0;
+    margin: 5px 0;
     cursor: pointer;
     background-color: transparent;
     font-family: 'Caveat', cursive;
