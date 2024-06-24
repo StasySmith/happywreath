@@ -1,0 +1,325 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Caveat', cursive;
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    z-index: 1; /* Базовый z-index для всех экранов */
+}
+
+.screen.visible {
+    display: flex;
+    z-index: 10; /* Повышенный z-index для видимого экрана */
+}
+
+/* Специфичный z-index для стартового экрана, если нужно */
+#splash-screen.visible {
+    z-index: 20;
+}
+
+#splash-screen {
+    background: url('images/splash.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+.splash-text {
+    font-size: 98px;
+    color: rgb(65, 186, 230);
+    margin-bottom: auto;
+    margin-top: 20%;
+    animation: fadeIn 5s;
+}
+
+.button {
+    font-size: 34px;
+    padding: 10px 20px;
+    margin-top: 20px; /* Исправлено: добавлено отступ сверху */
+    cursor: pointer;
+    background-color: white;
+    font-family: 'Caveat', cursive;
+    border: none;
+    border-radius: 5px;
+    z-index: 3; /* Исправлено: добавлен z-index для кнопок */
+}
+
+#wreath-selection-screen {
+    background: url('images/bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 5vh; /* Отступ сверху */
+}
+
+#wreath-selection-screen h1 {
+    color: rgb(65, 186, 230);
+    font-size: 36px;
+    margin-bottom: 20px; /* Отступ между заголовком и вариантами венков */
+}
+
+#wreath-selection-screen .wreath-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 80%; /* Ограничиваем ширину, чтобы венки не растягивались на весь экран */
+    margin: 0 auto; /* Центрируем блок с венками */
+}
+
+#wreath-selection-screen .wreath-options img {
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    margin: 10px;
+    transition: transform 0.2s; /* Добавляем плавное увеличение при наведении */
+}
+
+#wreath-selection-screen .wreath-options img:hover {
+    transform: scale(1.1); /* Немного увеличиваем венок при наведении */
+}
+
+#game-screen, #result-screen {
+    background-color: white;
+}
+
+.flower-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.flower-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.flower-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 100;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Background will be below other elements */
+    background-repeat: no-repeat;
+    background-size: cover; /* or '100% 100%' */
+}
+
+#wreath-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 200px;
+    height: 200px;
+    z-index: 2;
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+#selected-wreath {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.instruction {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Caveat', cursive;
+    color: #333;
+    text-align: center;
+    max-width: 180px;
+    display: none;
+    z-index: 10;
+}
+
+#game-screen .flower-in-wreath:hover {
+    cursor: pointer;
+    outline: 2px solid red;
+}
+
+#selected-wreath {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.instruction {
+    margin-top: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Caveat', cursive;
+    color: #333;
+    text-align: center;
+    max-width: 180px;
+}
+
+#selected-wreath > img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.flower img {
+    width: 60px;
+    height: 60px;
+    position: absolute;
+}
+
+#selected-wreath .flower-in-wreath {
+    position: absolute;
+    max-width: 40px; /* Уменьшим размер цветов */
+    max-height: 40px;
+}
+
+#game-screen .flower-in-wreath:hover {
+    cursor: pointer;
+    outline: 2px solid red;
+}
+
+#finish-button {
+    position: absolute;
+    bottom: 20px;
+    font-size: 34px;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: white;
+    font-family: 'Caveat', cursive;
+    border: none;
+    border-radius: 5px;
+    z-index: 3;
+}
+
+#wreath-scale-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    
+}
+
+#result-screen {
+    background-color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#final-wreath {
+    position: relative;
+    width: 80%; /* Уменьшаем размер для лучшего соответствия игровой области */
+    height: 80%;
+    max-width: 300px;
+    max-height: 300px;
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10vh; /* Добавляем отступ сверху */
+}
+
+#final-wreath .wreath-base {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#final-wreath .flower-in-wreath {
+    position: relative;
+    width: 100%; /* Уменьшаем размер для лучшего соответствия игровой области */
+    height: 100%;
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10vh; /* Добавляем отступ сверху */
+}
+
+#result-buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10vh; /* Добавляем отступ сверху */
+}
+
+.button {
+    font-size: 34px;
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    background-color: transparent;
+    font-family: 'Caveat', cursive;
+    color: rgb(30, 23, 1);
+    border: none;
+    text-align: center;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+
+
+
+
+
+
+
+

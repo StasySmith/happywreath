@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wreath Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://api.ok.ru/js/fapi5.js"></script>
+</head>
+<body>
+    <div id="splash-screen" class="screen visible">
+        <div class="splash-text">Собери свой венок счастья</div>
+        <button id="start-button" class="button">Начать</button>
+    </div>
+
+    <div id="wreath-selection-screen" class="screen">
+        <h1>Выберите основу венка</h1>
+        <div class="wreath-options"></div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="game-background" class="background"></div>
+        <div id="wreath-container">
+            <div id="selected-wreath"></div>
+        </div>
+        <button id="finish-button" class="button">Готово</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <div id="final-wreath"></div>
+        <div id="result-buttons">
+            <button id="restart-button" class="button">Начать заново</button>
+            <button id="save-button" class="button">Сохранить венок</button>
+            <button id="publish-button" class="button">Опубликовать на стене</button>
+            <button id="send-button" class="button">Отправить друзьям</button>
+            <button id="exit-button" class="button">Выход</button>
+        </div>
+    </div>
+    
+
+    <script src="script.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
