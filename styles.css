@@ -31,7 +31,7 @@ body, html {
 }
 
 #splash-screen {
-    background: url('images/splash.jpg') no-repeat center center;
+    background: url('https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/splash.jpg') no-repeat center center;
     background-size: cover;
 }
 
@@ -56,12 +56,12 @@ body, html {
 }
 
 #wreath-selection-screen {
-    background: url('images/bg.jpg') no-repeat center center;
+    background: url('https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/bg.jpg') no-repeat center center;
     background-size: cover;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 5vh; /* Отступ сверху */
+   
 }
 
 #wreath-selection-screen h1 {
@@ -74,6 +74,7 @@ body, html {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    padding-top: 10vh; /* Добавляем отступ сверху */
     max-width: 80%; /* Ограничиваем ширину, чтобы венки не растягивались на весь экран */
     margin: 0 auto; /* Центрируем блок с венками */
 }
@@ -251,7 +252,7 @@ body, html {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    z-index: 2;
+    
 }
 
 #final-wreath {
@@ -264,7 +265,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 10vh; /* Добавляем отступ сверху */
+    padding-top: 20vh; /* Добавляем отступ сверху */
 }
 
 #final-wreath .wreath-base {
@@ -281,7 +282,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 10vh; /* Добавляем отступ сверху */
+    padding-top: 20vh; /* Добавляем отступ сверху */
 }
 
 #result-buttons {
@@ -290,12 +291,13 @@ body, html {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding-top: 10vh; /* Добавляем отступ сверху */
+    padding-top: 15vh; /* Добавляем отступ сверху */
+    padding-bottom: 15vh;
 }
 
 .button {
     font-size: 34px;
-    padding: 10px 20px;
+    padding: 10px 10px;
     margin: 5px 0;
     cursor: pointer;
     background-color: transparent;
@@ -314,6 +316,17 @@ body, html {
         opacity: 1;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
