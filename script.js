@@ -1,19 +1,116 @@
+console.log("Script loaded");
+
+let okParams;
+
+function getUrlParams() {
+    const params = {};
+    window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+      params[key] = decodeURIComponent(value);
+    });
+    return params;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded");
+    okParams = getUrlParams();
+    initializeGame();
+});
+
+// Переопределение метода postMessage
+(function() {
+    var originalPostMessage = window.postMessage;
+    window.postMessage = function(message, targetOrigin, transfer) {
+        if (typeof message === 'object') {
+            message = JSON.stringify(message);
+        }
+        originalPostMessage.call(this, message, targetOrigin, transfer);
+    };
+})();
+
+function initializeGame() {
+    console.log("Initializing game");
+
+    if (typeof FAPI === 'undefined') {
+        console.error("FAPI not loaded");
+        return;
+    }
+
+    console.log("okParams:", okParams);
+    console.log("api_server:", okParams.api_server);
+    console.log("apiconnection:", okParams.apiconnection);
+
+    if (okParams && okParams.api_server && okParams.apiconnection) {
+        FAPI.init(okParams.api_server, okParams.apiconnection, function() {
+            console.log("FAPI initialized successfully");
+            startApp();
+        });
+    } else {
+        console.error("Missing required okParams", okParams);
+    }
+
+    const isMobile = okParams.mob === 'true';
+    const isContainer = okParams.container === 'true';
+
+    if (!checkSignature(okParams)) {
+        console.error('Invalid signature');
+        // Обработка ошибки
+        return;
+    }
 
     const screens = document.querySelectorAll(".screen");
     console.log("Number of screens:", screens.length);
 
-    // Функция для переключения экранов
-    function showScreen(screenId) {
-        screens.forEach(screen => {
-            screen.classList.remove("visible");
-        });
-        const screenToShow = document.getElementById(screenId);
-        if (screenToShow) {
-            screenToShow.classList.add("visible");
-        }
+    setupEventListeners();
+}
+
+function checkSignature(params) {
+    const secretKey = '25552CAEB8682B3C75E65964';
+    const signature = params.sig;
+    delete params.sig;
+    
+    const sortedKeys = Object.keys(params).sort();
+    let signString = '';
+    for (let key of sortedKeys) {
+      signString += key + '=' + params[key];
     }
+    signString += secretKey;
+    
+    const calculatedSignature = CryptoJS.MD5(signString).toString();
+    return calculatedSignature === signature;
+}
+
+
+function startApp() {
+    console.log("Starting app");
+    showScreen("splash-screen");
+}
+
+function setupEventListeners() {
+    const startButton = document.getElementById("start-button");
+    if (startButton) {
+        console.log("Start button found");
+        startButton.addEventListener("click", function() {
+            console.log("Start button clicked");
+            showScreen("wreath-selection-screen");
+        });
+    } else {
+        console.error("Start button not found!");
+    }
+}
+
+function showScreen(screenId) {
+    console.log("Showing screen:", screenId);
+    const screens = document.querySelectorAll(".screen");
+    screens.forEach(screen => {
+        screen.classList.remove("visible");
+    });
+    const screenToShow = document.getElementById(screenId);
+    if (screenToShow) {
+        screenToShow.classList.add("visible");
+    } else {
+        console.error("Screen not found:", screenId);
+    }
+}
 
     // Показываем стартовый экран
     showScreen("splash-screen");
@@ -31,13 +128,17 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Венки
-    const wreaths = ['wreath1.png', 'wreath2.png', 'wreath3.png', 'wreath4.png', 'wreath5.png'];
+    const wreaths = ['https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/wreaths/wreath1.png', 
+        'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/wreaths/wreath2.png', 
+        'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/wreaths/wreath3.png', 
+        'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/wreaths/wreath4.png', 
+        'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/wreaths/wreath5.png'];
     const wreathOptionsContainer = document.querySelector(".wreath-options");
 
     wreaths.forEach(wreath => {
         const img = document.createElement("img");
-        img.src = `images/wreaths/${wreath}`;
-        img.alt = wreath;
+        img.src = wreath;
+        img.alt = "Wreath";
         img.addEventListener("click", function() {
             startGame(wreath);
         });
@@ -48,11 +149,11 @@ document.addEventListener("DOMContentLoaded", function() {
         showScreen("game-screen");
     
         const selectedWreathContainer = document.getElementById("selected-wreath");
-        selectedWreathContainer.innerHTML = `<img src="images/wreaths/${selectedWreath}" alt="Selected Wreath">`;
+        selectedWreathContainer.innerHTML = `<img src="${selectedWreath}" alt="Selected Wreath">`;
     
         const randomBackground = Math.floor(Math.random() * 5) + 1;
         const gameBackground = document.getElementById("game-background");
-        gameBackground.style.backgroundImage = `url('images/backgrounds/bg${randomBackground}.jpg')`;
+        gameBackground.style.backgroundImage = `url('https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/backgrounds/bg${randomBackground}.jpg')`;
     
         selectedWreathContainer.addEventListener('dragover', dragOver);
         selectedWreathContainer.addEventListener('drop', drop);
@@ -94,27 +195,27 @@ document.addEventListener("DOMContentLoaded", function() {
         const gameBackground = document.getElementById("game-background");
         gameBackground.innerHTML = ''; // Убираем старые цветы
         const flowers = [
-            { name: 'Бессмертник', image: 'images/flowers/bessmert.png', meaning: 'Здоровье' },
-            { name: 'Незабудка', image: 'images/flowers/nezab.png', meaning: 'Вечная память' },
-            { name: 'Маргаритка', image: 'images/flowers/daisy.png', meaning: 'Невинность' },
-            { name: 'Красная мальва', image: 'images/flowers/malvared.png', meaning: 'Вера' },
-            { name: 'Мак', image: 'images/flowers/maksmall.png', meaning: 'Память о воинах' },
-            { name: 'Барвинок', image: 'images/flowers/barvin.png', meaning: 'Бессмертие души' },
-            { name: 'Пшеница', image: 'images/flowers/corn.png', meaning: 'Изобилие' },
-            { name: 'Хмель', image: 'images/flowers/chmel.png', meaning: 'Ум' },
-            { name: 'Вереск', image: 'images/flowers/veresk.png', meaning: 'Одиночество' },
-            { name: 'Тысячелистник', image: 'images/flowers/tyswight.png', meaning: 'Непокоренность' },
-            { name: 'Первоцвет', image: 'images/flowers/pervozvet.png', meaning: 'Недолговечность' },
-            { name: 'Розовый тысячелистник', image: 'images/flowers/tysrose.png', meaning: 'Упорство' },
-            { name: 'Белая мальва', image: 'images/flowers/malvawight.png', meaning: 'Надежда' },
-            { name: 'Мак полевой', image: 'images/flowers/makbig.png', meaning: 'Вечный покой' },
-            { name: 'Яблоня', image: 'images/flowers/yabl.png', meaning: 'Преданность' },
-            { name: 'Розовый пион', image: 'images/flowers/pionrose.png', meaning: 'Влюбленность' },
-            { name: 'Мальва лиловая', image: 'images/flowers/malvalil.png', meaning: 'Любовь' },
-            { name: 'Калина', image: 'images/flowers/kalina.png', meaning: 'Красота и здоровье' },
-            { name: 'Ромашка', image: 'images/flowers/romaska.png', meaning: 'Девичья чистота' },
-            { name: 'Пион лиловый', image: 'images/flowers/pionlil.png', meaning: 'Процветание' },
-            { name: 'Василек', image: 'images/flowers/vasil.png', meaning: 'Верность' }
+            { name: 'Бессмертник', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/bessmert.png', meaning: 'Здоровье' },
+            { name: 'Незабудка', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/nezab.png', meaning: 'Вечная память' },
+            { name: 'Маргаритка', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/daisy.png', meaning: 'Невинность' },
+            { name: 'Красная мальва', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/malvared.png', meaning: 'Вера' },
+            { name: 'Мак', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/maksmall.png', meaning: 'Память о воинах' },
+            { name: 'Барвинок', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/barvin.png', meaning: 'Бессмертие души' },
+            { name: 'Пшеница', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/corn.png', meaning: 'Изобилие' },
+            { name: 'Хмель', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/chmel.png', meaning: 'Ум' },
+            { name: 'Вереск', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/veresk.png', meaning: 'Одиночество' },
+            { name: 'Тысячелистник', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/tyswight.png', meaning: 'Непокоренность' },
+            { name: 'Первоцвет', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/pervozvet.png', meaning: 'Недолговечность' },
+            { name: 'Розовый тысячелистник', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/tysrose.png', meaning: 'Упорство' },
+            { name: 'Белая мальва', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/malvawight.png', meaning: 'Надежда' },
+            { name: 'Мак полевой', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/makbig.png', meaning: 'Вечный покой' },
+            { name: 'Яблоня', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/yabl.png', meaning: 'Преданность' },
+            { name: 'Розовый пион', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/pionrose.png', meaning: 'Влюбленность' },
+            { name: 'Мальва лиловая', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/malvalil.png', meaning: 'Любовь' },
+            { name: 'Калина', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/kalina.png', meaning: 'Красота и здоровье' },
+            { name: 'Ромашка', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/romaska.png', meaning: 'Девичья чистота' },
+            { name: 'Пион лиловый', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/pionlil.png', meaning: 'Процветание' },
+            { name: 'Василек', image: 'https://cdn.jsdelivr.net/gh/StasySmith/happywreath@main/images/flowers/vasil.png', meaning: 'Верность' }
         ];
     
         flowers.forEach(flower => {
@@ -305,20 +406,40 @@ function hideInstruction(e) {
             // Масштабируем контейнер финального венка
             finalWreathContainer.style.transform = `scale(${scaleFactor})`;
             finalWreathContainer.style.transformOrigin = 'center center';
-        }
 
-    // Устанавливаем размер финального венка
+             // Устанавливаем размер финального венка
     finalWreathContainer.style.transform = `scale(${scaleFactor})`;
     finalWreathContainer.style.transformOrigin = 'center center';
+
+        }
+
+   
 });
-
-
     document.getElementById("restart-button").addEventListener("click", function() {
         showScreen("wreath-selection-screen");
     });
 
     document.getElementById("exit-button").addEventListener("click", function() {
-        window.close();
+        try {
+            // Попытка закрыть окно
+            window.close();
+        } catch (error) {
+            console.error("Ошибка при закрытии окна:", error);
+            
+            // Альтернативный способ закрытия приложения
+            try {
+                // Попытка использовать API Одноклассников для закрытия приложения
+                FAPI.UI.showNotification("Приложение закрывается...");
+                FAPI.Client.call('app.quit', {}, function() {
+                    console.log("Приложение закрыто через FAPI");
+                });
+            } catch (fapiError) {
+                console.error("Ошибка при использовании FAPI для закрытия:", fapiError);
+                
+                // Если и это не сработало, можно попробовать перенаправить пользователя
+                alert("Не удалось закрыть приложение. Пожалуйста, закройте вкладку вручную.");
+            }
+        }
     });
 
     document.getElementById("save-button").addEventListener("click", function() {
@@ -326,24 +447,45 @@ function hideInstruction(e) {
     });
 
     function saveWreathAsImage() {
-        html2canvas(document.getElementById("final-wreath")).then(canvas => {
+        html2canvas(document.getElementById("final-wreath"), {
+            allowTaint: true,
+            useCORS: true
+        }).then(canvas => {
+            // Создаем новый canvas того же размера
+            const newCanvas = document.createElement('canvas');
+            const ctx = newCanvas.getContext('2d');
+            
+            newCanvas.width = canvas.width;
+            newCanvas.height = canvas.height;
+            
+            // Рисуем оригинальный венок
+            ctx.drawImage(canvas, 0, 0);
+            
+            // Добавляем текст поверх венка
+            ctx.fillStyle = 'rgb(65, 186, 230'; // Цвет текста
+            ctx.font = 'bold 120px Caveat'; // Размер и шрифт текста
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            const text = 'Венок Счастья';
+            const x = newCanvas.width / 2;
+            const y = 100; // Отступ сверху
+            
+            // Рисуем текст с обводкой
+            ctx.fillText(text, x, y);
+            
+            // Сохраняем изображение в формате JPG
             const link = document.createElement('a');
-            link.download = 'wreath.png';
-            link.href = canvas.toDataURL();
+            link.download = 'wreath.jpg';
+            link.href = newCanvas.toDataURL('image/jpeg', 0.9);
             link.click();
         });
     }
 
-    document.getElementById("publish-button").addEventListener("click", function() {
-        publishWreath();
-    });
+ 
     
-    document.getElementById("send-button").addEventListener("click", function() {
-        sendWreathToFriends();
-    });
-   
-    
-});
+
+
 
 
 
