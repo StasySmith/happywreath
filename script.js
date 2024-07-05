@@ -341,75 +341,7 @@ function hideInstruction(e) {
     document.getElementById("send-button").addEventListener("click", function() {
         sendWreathToFriends();
     });
-    
-    function publishWreath() {
-        html2canvas(document.getElementById("final-wreath")).then(canvas => {
-            canvas.toBlob(function(blob) {
-                var formData = new FormData();
-                formData.append('file', blob, 'wreath.png');
-                
-                FAPI.Client.call({"method":"photosV2.getUploadUrl"}, function(status, data, error) {
-                    if (status == 'ok') {
-                        var uploadUrl = data.upload_url;
-                        
-                        fetch(uploadUrl, {
-                            method: 'POST',
-                            body: formData
-                        }).then(response => response.json())
-                        .then(result => {
-                            var photoId = result.photos[0].token;
-                            
-                            FAPI.Client.call({"method":"mediatopic.post", "media":[{
-                                "type": "photo",
-                                "list": [{"id": photoId}]
-                            }], "text": "Мой венок счастья!"}, function(status, data, error) {
-                                if (status == 'ok') {
-                                    alert("Венок успешно опубликован на вашей стене!");
-                                } else {
-                                    alert("Ошибка при публикации венка: " + error);
-                                }
-                            });
-                        });
-                    } else {
-                        alert("Ошибка при получении URL для загрузки: " + error);
-                    }
-                });
-            }, 'image/png');
-        });
-    }
-    
-    function sendWreathToFriends() {
-        html2canvas(document.getElementById("final-wreath")).then(canvas => {
-            canvas.toBlob(function(blob) {
-                var formData = new FormData();
-                formData.append('file', blob, 'wreath.png');
-                
-                FAPI.Client.call({"method":"photosV2.getUploadUrl"}, function(status, data, error) {
-                    if (status == 'ok') {
-                        var uploadUrl = data.upload_url;
-                        
-                        fetch(uploadUrl, {
-                            method: 'POST',
-                            body: formData
-                        }).then(response => response.json())
-                        .then(result => {
-                            var photoId = result.photos[0].token;
-                            
-                            FAPI.UI.showNotification("Отправить венок друзьям", "Мой венок счастья!", "photo", photoId, function(status, result) {
-                                if (status == 'ok') {
-                                    alert("Венок успешно отправлен друзьям!");
-                                } else {
-                                    alert("Ошибка при отправке венка: " + result);
-                                }
-                            });
-                        });
-                    } else {
-                        alert("Ошибка при получении URL для загрузки: " + error);
-                    }
-                });
-            }, 'image/png');
-        });
-    }
+   
     
 });
 
