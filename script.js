@@ -212,11 +212,16 @@ function showScreen(screenId) {
     function addTouchEventListener(elementId, callback) {
         const element = document.getElementById(elementId);
         if (element) {
-            element.addEventListener("click", callback);
-            element.addEventListener("touchstart", function(e) {
+            element.addEventListener("click", function(e) {
                 e.preventDefault();
                 callback();
             });
+            element.addEventListener("touchend", function(e) {
+                e.preventDefault();
+                callback();
+            });
+        } else {
+            console.error(`Element with id ${elementId} not found!`);
         }
     }
     
@@ -531,37 +536,41 @@ addTouchEventListener("restart-button", function() {
 });
 
 addTouchEventListener("exit-button", function() {
+    console.log("Exit button pressed");
+    try {
+        // Попытка закрыть окно
+        window.close();
+    } catch (error) {
+        console.error("Ошибка при закрытии окна:", error);
+        
+        // Альтернативный способ закрытия приложения
         try {
-            // Попытка закрыть окно
-            window.close();
-        } catch (error) {
-            console.error("Ошибка при закрытии окна:", error);
+            // Попытка использовать API Одноклассников для закрытия приложения
+            FAPI.UI.showNotification("Приложение закрывается...");
+            FAPI.Client.call('app.quit', {}, function() {
+                console.log("Приложение закрыто через FAPI");
+            });
+        } catch (fapiError) {
+            console.error("Ошибка при использовании FAPI для закрытия:", fapiError);
             
-            // Альтернативный способ закрытия приложения
-            try {
-                // Попытка использовать API Одноклассников для закрытия приложения
-                FAPI.UI.showNotification("Приложение закрывается...");
-                FAPI.Client.call('app.quit', {}, function() {
-                    console.log("Приложение закрыто через FAPI");
-                });
-            } catch (fapiError) {
-                console.error("Ошибка при использовании FAPI для закрытия:", fapiError);
-                
-                // Если и это не сработало, можно попробовать перенаправить пользователя
-                alert("Не удалось закрыть приложение. Пожалуйста, закройте вкладку вручную.");
-            }
+            // Если и это не сработало, можно попробовать перенаправить пользователя
+            alert("Не удалось закрыть приложение. Пожалуйста, закройте вкладку вручную.");
         }
-    });
+    }
+});
 
-    addTouchEventListener("save-button", function()  {
+    addTouchEventListener("save-button", function() {
+        console.log("Save button pressed");
         saveWreathAsImage();
     });
 
     function saveWreathAsImage() {
+        console.log("Attempting to save wreath as image");
         html2canvas(document.getElementById("final-wreath"), {
             allowTaint: true,
             useCORS: true
         }).then(canvas => {
+            console.log("Canvas created");
             // Создаем новый canvas того же размера
             const newCanvas = document.createElement('canvas');
             const ctx = newCanvas.getContext('2d');
@@ -573,7 +582,7 @@ addTouchEventListener("exit-button", function() {
             ctx.drawImage(canvas, 0, 0);
             
             // Добавляем текст поверх венка
-            ctx.fillStyle = 'rgb(65, 186, 230'; // Цвет текста
+            ctx.fillStyle = 'rgb(65, 186, 230)'; // Цвет текста
             ctx.font = 'bold 120px Caveat'; // Размер и шрифт текста
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
@@ -585,13 +594,36 @@ addTouchEventListener("exit-button", function() {
             // Рисуем текст с обводкой
             ctx.fillText(text, x, y);
             
-            // Сохраняем изображение в формате JPG
-            const link = document.createElement('a');
-            link.download = 'wreath.jpg';
-            link.href = newCanvas.toDataURL('image/jpeg', 0.9);
-            link.click();
+            console.log("Text added to canvas");
+    
+            // Сохраняем изображение
+            if (isMobileDevice()) {
+                console.log("Mobile device detected, opening image in new tab");
+                // Для мобильных устройств открываем изображение в новой вкладке
+                const imageDataUrl = newCanvas.toDataURL('image/jpeg', 0.9);
+                window.open(imageDataUrl, '_blank');
+            } else {
+                console.log("Desktop device detected, downloading image");
+                // Для десктопов сохраняем изображение
+                const link = document.createElement('a');
+                link.download = 'wreath.jpg';
+                link.href = newCanvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            }
+        }).catch(error => {
+            console.error("Error saving wreath as image:", error);
         });
     }
+    
+    // Функция для определения типа устройства
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+ 
+    
+
+
 
  
     
