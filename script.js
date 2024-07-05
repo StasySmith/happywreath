@@ -537,27 +537,19 @@ addTouchEventListener("restart-button", function() {
 
 addTouchEventListener("exit-button", function() {
     console.log("Exit button pressed");
-    try {
-        // Попытка закрыть окно
-        window.close();
-    } catch (error) {
-        console.error("Ошибка при закрытии окна:", error);
-        
-        // Альтернативный способ закрытия приложения
+    if (confirm("Вы уверены, что хотите выйти из игры?")) {
         try {
-            // Попытка использовать API Одноклассников для закрытия приложения
-            FAPI.UI.showNotification("Приложение закрывается...");
-            FAPI.Client.call('app.quit', {}, function() {
-                console.log("Приложение закрыто через FAPI");
-            });
-        } catch (fapiError) {
-            console.error("Ошибка при использовании FAPI для закрытия:", fapiError);
-            
-            // Если и это не сработало, можно попробовать перенаправить пользователя
-            alert("Не удалось закрыть приложение. Пожалуйста, закройте вкладку вручную.");
+            window.close();
+        } catch (error) {
+            console.error("Ошибка при закрытии окна:", error);
+            alert("Чтобы выйти из игры, пожалуйста, закройте эту вкладку.");
         }
     }
 });
+// Функция для определения типа устройства (если она еще не определена)
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 
     addTouchEventListener("save-button", function() {
         console.log("Save button pressed");
