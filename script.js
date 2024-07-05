@@ -294,6 +294,17 @@ function showScreen(screenId) {
     
             flowerDiv.appendChild(flowerImg);
             flowerDiv.appendChild(tooltip);
+
+            // Добавляем обработчики для мобильных устройств
+        flowerDiv.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            tooltip.style.display = 'block';
+        });
+
+        flowerDiv.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            tooltip.style.display = 'none';
+        });
     
             flowerDiv.addEventListener('mouseenter', () => {
                 tooltip.style.display = 'block';
@@ -323,6 +334,13 @@ function showScreen(screenId) {
 
        
     function dragStart(e) {
+        if (e.type === 'touchstart') {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = e.target.getBoundingClientRect();
+            e.target.touchOffsetX = touch.clientX - rect.left;
+            e.target.touchOffsetY = touch.clientY - rect.top;
+        }
         const flower = {
             name: e.target.alt,
             image: e.target.src
@@ -360,24 +378,31 @@ function showScreen(screenId) {
         flowerImg.addEventListener('dragstart', dragStart);
         flowerImg.addEventListener('dragend', dragEnd);
     
-        // Добавляем обработчики касаний
-        flowerImg.addEventListener('touchstart', touchStart);
-        flowerImg.addEventListener('touchmove', touchMove);
-        flowerImg.addEventListener('touchend', touchEnd);
-    
-        // Добавляем обработчик двойного клика для удаления цветка
+        // Обработчик двойного клика для удаления цветка (для десктопов)
         flowerImg.addEventListener('dblclick', removeFlower);
     
-        // Добавляем обработчик двойного касания для мобильных устройств
+        // Обработчик двойного касания для удаления цветка (для мобильных устройств)
         let lastTap = 0;
         flowerImg.addEventListener('touchstart', function(e) {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
             if (tapLength < 500 && tapLength > 0) {
                 e.preventDefault();
-                removeFlower.call(this, e);
+                e.stopPropagation();
+                removeFlower.call(this);
             }
             lastTap = currentTime;
+        });
+    
+        // Обработчик для перетаскивания на мобильных устройствах
+        flowerImg.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = selectedWreathContainer.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            this.style.left = `${x}px`;
+            this.style.top = `${y}px`;
         });
     
         flowerImg.addEventListener('mouseenter', showInstruction);
@@ -407,12 +432,15 @@ function hideInstruction(e) {
     }
 }
     
-    function removeFlower(e) {
-        // Проверяем, находимся ли мы на игровом экране
-        if (document.getElementById('game-screen').classList.contains('visible')) {
-            e.target.remove();
-        }
+function removeFlower(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
+    if (document.getElementById('game-screen').classList.contains('visible')) {
+        this.remove();
+    }
+}
 
     function dragEnd(e) {
         const rect = e.target.parentElement.getBoundingClientRect();
@@ -564,6 +592,10 @@ addTouchEventListener("exit-button", function() {
             link.click();
         });
     }
+
+ 
+    
+
 
  
     
