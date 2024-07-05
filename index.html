@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Wreath Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://api.ok.ru/js/fapi5.js"></script>
+    <link rel="icon" href="path/to/favicon.ico" type="image/x-icon">
 </head>
+
 <body>
+    <noscript>
+        <p>Для работы приложения необходимо включить JavaScript.</p>
+    </noscript>
+
     <div id="splash-screen" class="screen visible">
         <div class="splash-text">Собери свой венок счастья</div>
-        <button id="start-button" class="button">Начать</button>
+        <button id="start-button" class="button" aria-label="Начать игру">Начать</button>
     </div>
 
     <div id="wreath-selection-screen" class="screen">
@@ -35,12 +42,26 @@
             <button id="exit-button" class="button">Выход</button>
         </div>
     </div>
-    
 
-    <script src="script.js"></script>
+    <script src="https://api.ok.ru/js/fapi5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+    
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
