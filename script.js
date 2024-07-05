@@ -27,6 +27,48 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 })();
 
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+}
+
+function touchStart(e) {
+    e.preventDefault();
+    this.touchData = {
+        startX: e.touches[0].clientX - this.offsetLeft,
+        startY: e.touches[0].clientY - this.offsetTop,
+        flower: {
+            name: this.alt,
+            image: this.src
+        }
+    };
+}
+
+function touchMove(e) {
+    e.preventDefault();
+    if (this.touchData) {
+        let touchX = e.touches[0].clientX - this.touchData.startX;
+        let touchY = e.touches[0].clientY - this.touchData.startY;
+        this.style.position = 'absolute';
+        this.style.left = touchX + 'px';
+        this.style.top = touchY + 'px';
+    }
+}
+
+function touchEnd(e) {
+    e.preventDefault();
+    const selectedWreathContainer = document.getElementById("selected-wreath");
+    const rect = selectedWreathContainer.getBoundingClientRect();
+    const x = e.changedTouches[0].clientX - rect.left;
+    const y = e.changedTouches[0].clientY - rect.top;
+    
+    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+        addToWreath(this.touchData.flower, x, y);
+    }
+    
+    this.style.position = 'static';
+    this.touchData = null;
+}
+
 function initializeGame() {
     console.log("Initializing game");
 
@@ -91,6 +133,12 @@ function setupEventListeners() {
         console.log("Start button found");
         startButton.addEventListener("click", function() {
             console.log("Start button clicked");
+            showScreen("wreath-selection-screen");
+        });
+        // Добавляем обработчик для касания
+        startButton.addEventListener("touchstart", function(e) {
+            e.preventDefault(); // Предотвращаем двойное срабатывание на мобильных устройствах
+            console.log("Start button touched");
             showScreen("wreath-selection-screen");
         });
     } else {
@@ -159,6 +207,17 @@ function showScreen(screenId) {
         selectedWreathContainer.addEventListener('drop', drop);
     
         displayFlowers();
+    }
+
+    function addTouchEventListener(elementId, callback) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.addEventListener("click", callback);
+            element.addEventListener("touchstart", function(e) {
+                e.preventDefault();
+                callback();
+            });
+        }
     }
     
     function dragOver(e) {
@@ -245,6 +304,11 @@ function showScreen(screenId) {
             });
     
             flowerImg.addEventListener('dragstart', dragStart);
+
+            // Добавляем обработчики касаний
+        flowerImg.addEventListener('touchstart', touchStart);
+        flowerImg.addEventListener('touchmove', touchMove);
+        flowerImg.addEventListener('touchend', touchEnd);
     
             // Позиционирование цветка
             const x = Math.random() * (gameBackground.offsetWidth - 50);
@@ -256,7 +320,8 @@ function showScreen(screenId) {
             gameBackground.appendChild(flowerDiv);
         });
     }
-    
+
+       
     function dragStart(e) {
         const flower = {
             name: e.target.alt,
@@ -281,7 +346,7 @@ function showScreen(screenId) {
     function addToWreath(flower, x, y) {
         const selectedWreathContainer = document.getElementById("selected-wreath");
         const flowerImg = document.createElement('img');
-        flowerImg.src = flower.image; // Убедитесь, что flower.image содержит правильный путь
+        flowerImg.src = flower.image;
         flowerImg.alt = flower.name;
         flowerImg.classList.add('flower-in-wreath');
         flowerImg.style.position = 'absolute';
@@ -291,17 +356,34 @@ function showScreen(screenId) {
         flowerImg.style.height = '40px';
     
         flowerImg.draggable = true;
-
+    
         flowerImg.addEventListener('dragstart', dragStart);
         flowerImg.addEventListener('dragend', dragEnd);
-
+    
+        // Добавляем обработчики касаний
+        flowerImg.addEventListener('touchstart', touchStart);
+        flowerImg.addEventListener('touchmove', touchMove);
+        flowerImg.addEventListener('touchend', touchEnd);
+    
         // Добавляем обработчик двойного клика для удаления цветка
-    flowerImg.addEventListener('dblclick', removeFlower);
-
-    flowerImg.addEventListener('mouseenter', showInstruction);
-    flowerImg.addEventListener('mouseleave', hideInstruction);
-
-    selectedWreathContainer.appendChild(flowerImg);
+        flowerImg.addEventListener('dblclick', removeFlower);
+    
+        // Добавляем обработчик двойного касания для мобильных устройств
+        let lastTap = 0;
+        flowerImg.addEventListener('touchstart', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 500 && tapLength > 0) {
+                e.preventDefault();
+                removeFlower.call(this, e);
+            }
+            lastTap = currentTime;
+        });
+    
+        flowerImg.addEventListener('mouseenter', showInstruction);
+        flowerImg.addEventListener('mouseleave', hideInstruction);
+    
+        selectedWreathContainer.appendChild(flowerImg);
     }
 
     function showInstruction(e) {
@@ -346,9 +428,8 @@ function hideInstruction(e) {
     });
 
     // Обработчик для кнопки "Готово"
-    const finishButton = document.getElementById("finish-button");
-
-    document.getElementById("finish-button").addEventListener("click", function() {
+   
+    addTouchEventListener("finish-button", function()  {
         showScreen("result-screen");
         showFinalWreath();
 
@@ -415,11 +496,13 @@ function hideInstruction(e) {
 
    
 });
-    document.getElementById("restart-button").addEventListener("click", function() {
-        showScreen("wreath-selection-screen");
-    });
 
-    document.getElementById("exit-button").addEventListener("click", function() {
+
+addTouchEventListener("restart-button", function() {
+    showScreen("wreath-selection-screen");
+});
+
+addTouchEventListener("exit-button", function() {
         try {
             // Попытка закрыть окно
             window.close();
@@ -442,7 +525,7 @@ function hideInstruction(e) {
         }
     });
 
-    document.getElementById("save-button").addEventListener("click", function() {
+    addTouchEventListener("save-button", function()  {
         saveWreathAsImage();
     });
 
@@ -481,6 +564,11 @@ function hideInstruction(e) {
             link.click();
         });
     }
+
+ 
+    
+
+
 
  
     
