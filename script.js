@@ -556,48 +556,79 @@ function isMobileDevice() {
         saveWreathAsImage();
     });
 
-    function saveWreathAsImage() {
-    console.log("Attempting to save wreath as image");
+   function saveWreathAsImage() {
+        console.log("Attempting to save wreath as image");
+        
+        const wreathElement = document.getElementById("final-wreath");
+        
+        // Убедимся, что все изображения загружены
+        const images = wreathElement.getElementsByTagName('img');
+        const imagePromises = Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => img.onload = resolve);
+        });
     
-    const wreathElement = document.getElementById("final-wreath");
+        Promise.all(imagePromises).then(() => {
+            html2canvas(wreathElement, {
+                allowTaint: true,
+                useCORS: true,
+                scale: 2, // Увеличиваем масштаб для лучшего качества
+                logging: true, // Включаем логирование для отладки
+                backgroundColor: '#FFFFFF' // Белый фон
+            }).then(canvas => {
+                console.log("Canvas created");
+                
+                // Создаем новый canvas того же размера
+                const newCanvas = document.createElement('canvas');
+                const ctx = newCanvas.getContext('2d');
+                
+                newCanvas.width = canvas.width;
+                newCanvas.height = canvas.height;
+                
+                // Рисуем оригинальный венок
+                ctx.drawImage(canvas, 0, 0);
+                
+                // Добавляем текст поверх венка
+                ctx.fillStyle = 'rgb(65, 186, 230)'; // Цвет текста
+                ctx.font = 'bold 120px Caveat'; // Размер и шрифт текста
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                
+                const text = 'Венок Счастья';
+                const x = newCanvas.width / 2;
+                const y = 100; // Отступ сверху
+                
+                // Рисуем текст с обводкой
+                ctx.fillText(text, x, y);
+                
+                console.log("Text added to canvas");
     
-    // Убедимся, что все изображения загружены
-    const images = wreathElement.getElementsByTagName('img');
-    const imagePromises = Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => img.onload = resolve);
-    });
-
-    Promise.all(imagePromises).then(() => {
-        html2canvas(wreathElement, {
-    allowTaint: true,
-    useCORS: true,
-    scale: 2,
-    logging: true,
-    backgroundColor: '#FFFFFF'
-}).then(canvas => {
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    if (isMobileDevice()) {
-        const img = document.createElement('img');
-        img.src = imageDataUrl;
-        const w = window.open("");
-        w.document.write(img.outerHTML);
-    } else {
-        const link = document.createElement('a');
-        link.download = 'wreath.jpg';
-        link.href = imageDataUrl;
-        link.click();
+                // Сохраняем изображение
+                const imageDataUrl = newCanvas.toDataURL('image/jpeg', 0.9);
+                
+                if (isMobileDevice()) {
+                    console.log("Mobile device detected, opening image in new tab");
+                    const img = document.createElement('img');
+                    img.src = imageDataUrl;
+                    const w = window.open("");
+                    w.document.write(img.outerHTML);
+                } else {
+                    console.log("Desktop device detected, downloading image");
+                    const link = document.createElement('a');
+                    link.download = 'wreath.jpg';
+                    link.href = imageDataUrl;
+                    link.click();
+                }
+            }).catch(error => {
+                console.error("Error in html2canvas:", error);
+                alert("Произошла ошибка при создании изображения. Пожалуйста, попробуйте еще раз.");
+            });
+        });
     }
-}).catch(error => {
-    console.error("Error in html2canvas:", error);
-    alert("Произошла ошибка при создании изображения. Пожалуйста, попробуйте еще раз.");
-});
-    });
-}
-
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
+    
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
  
     
 
