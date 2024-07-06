@@ -557,12 +557,27 @@ function isMobileDevice() {
     });
 
     function saveWreathAsImage() {
-        console.log("Attempting to save wreath as image");
-        html2canvas(document.getElementById("final-wreath"), {
+    console.log("Attempting to save wreath as image");
+    
+    const wreathElement = document.getElementById("final-wreath");
+    
+    // Убедимся, что все изображения загружены
+    const images = wreathElement.getElementsByTagName('img');
+    const imagePromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => img.onload = resolve);
+    });
+
+    Promise.all(imagePromises).then(() => {
+        html2canvas(wreathElement, {
             allowTaint: true,
-            useCORS: true
+            useCORS: true,
+            scale: 2, // Увеличиваем масштаб для лучшего качества
+            logging: true, // Включаем логирование для отладки
+            backgroundColor: '#FFFFFF' // Белый фон
         }).then(canvas => {
             console.log("Canvas created");
+            
             // Создаем новый canvas того же размера
             const newCanvas = document.createElement('canvas');
             const ctx = newCanvas.getContext('2d');
@@ -587,31 +602,33 @@ function isMobileDevice() {
             ctx.fillText(text, x, y);
             
             console.log("Text added to canvas");
-    
+
             // Сохраняем изображение
+            const imageDataUrl = newCanvas.toDataURL('image/jpeg', 0.9);
+            
             if (isMobileDevice()) {
                 console.log("Mobile device detected, opening image in new tab");
-                // Для мобильных устройств открываем изображение в новой вкладке
-                const imageDataUrl = newCanvas.toDataURL('image/jpeg', 0.9);
-                window.open(imageDataUrl, '_blank');
+                const img = document.createElement('img');
+                img.src = imageDataUrl;
+                const w = window.open("");
+                w.document.write(img.outerHTML);
             } else {
                 console.log("Desktop device detected, downloading image");
-                // Для десктопов сохраняем изображение
                 const link = document.createElement('a');
                 link.download = 'wreath.jpg';
-                link.href = newCanvas.toDataURL('image/jpeg', 0.9);
+                link.href = imageDataUrl;
                 link.click();
             }
         }).catch(error => {
-            console.error("Error saving wreath as image:", error);
+            console.error("Error in html2canvas:", error);
+            alert("Произошла ошибка при создании изображения. Пожалуйста, попробуйте еще раз.");
         });
-    }
-    
-    // Функция для определения типа устройства
-    function isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
+    });
+}
 
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
  
     
 
